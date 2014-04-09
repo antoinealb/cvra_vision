@@ -1,0 +1,11 @@
+
+*.png
+*.jpg
+
+CMakeFiles/*
+
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+example.txt
+vision

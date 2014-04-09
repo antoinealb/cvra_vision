@@ -1,22 +1,11 @@
-#include <opencv/cv.h>
+#include "opencv/cv.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
-#include <sstream>
 
 using namespace std;
 using namespace cv;
-
-#define HSV_SATURATION_MIN 127
-#define HSV_SATURATION_MAX 240
-#define HSV_VALUE_MIN 127
-#define HSV_VALUE_MAX 240
-#define HSV_RED_MIN 175
-#define HSV_RED_MAX 5
-#define HSV_YELLOW_MIN 15
-#define HSV_YELLOW_MAX 30
-#define FRACTION_IMG_THRESH 0.75
 
 Mat vision_triangle_filter_img(Mat img_blur)
 {
@@ -55,6 +44,7 @@ int vision_triangle_detect(Mat img)
     /* display the different results */
     namedWindow("Display window", WINDOW_AUTOSIZE);
 
+
     cout << "img.size: " << img.size() << endl;
     imshow("img", img);
     moveWindow("img", 0, 0);
@@ -73,29 +63,32 @@ char vision_check_color(Mat img)
 {
     char color = '0';
 
-    medianBlur(img, img, 21);       // smooth color image 
+    /* smooth color image */
+    Mat img_blur;
+    medianBlur(img, img_blur, 21);
 
-    cvtColor(img, img, CV_BGR2HSV);
+    Mat img_hsv;
+    cvtColor(img_blur, img_hsv, CV_BGR2HSV);
 
     unsigned int cnt_red = 0, cnt_yellow = 0;
     Vec3b hsv_pixel;
-    for (int x = 0; x <= img.cols; x++) {
-        for (int y = 0; y <= img.rows; y++) {
-            hsv_pixel = img.at<Vec3b>(y, x);   
+    for (int x = 0; x <= img_hsv.cols; x++) {
+        for (int y = 0; y <= img_hsv.rows; y++) {
+            hsv_pixel = img_hsv.at<Vec3b>(y, x);   
             /* check if saturation and value are in a good range */
-            //if (hsv_pixel[1] >= HSV_SATURATION_MIN && hsv_pixel[1] <= HSV_SATURATION_MAX && 
-            //    hsv_pixel[2] >= HSV_VALUE_MIN && hsv_pixel[2] <= HSV_VALUE_MAX) {
+            if (hsv_pixel[1] >= 127 && hsv_pixel[1] <= 240 && 
+                hsv_pixel[2] >= 127 && hsv_pixel[2] <= 240) {
                 /* check for colour */
-                if (hsv_pixel[0] >= HSV_RED_MIN || hsv_pixel[0] <= HSV_RED_MAX)
+                if (hsv_pixel[0] >= 175 || hsv_pixel[0] <= 5)
                     cnt_red++;
-                else if (hsv_pixel[0] >= HSV_YELLOW_MIN && hsv_pixel[0] <= HSV_YELLOW_MAX)
+                else if (hsv_pixel[0] >= 20 && hsv_pixel[0] <= 30)
                     cnt_yellow++;
-            //}
+            }
         }
     }
 
     /* testing if count in threshhold */
-    unsigned int cnt_thresh = img.cols * img.rows * FRACTION_IMG_THRESH;
+    unsigned int cnt_thresh = img_hsv.cols * img_hsv.rows * 0.75;
     if (cnt_red >= cnt_thresh)
         return 'r';
     else if (cnt_yellow >= cnt_thresh)
@@ -108,38 +101,34 @@ char vision_check_color(Mat img)
 int main(int argc, char** argv)
 {
     namedWindow("Display window", WINDOW_AUTOSIZE);
-
-    VideoCapture camera(0);     // open default camera
-    if(!camera.isOpened())
-        return -1;
-
-    //Mat img = imread(argv[1], CV_LOAD_IMAGE_COLOR);   // image as argument
-    //if (!img.data ) {
-    //    cout <<  "Could not open or find the image." << endl ;
+    ///* open default camera */
+    //VideoCapture cap(0);
+    ///* check if succeded */
+    //if(!cap.isOpened())
     //    return -1;
-    //}
 
-    //int i = 0;
-    //ostringstream s;
+    /* original image */
+    Mat img = imread(argv[1], CV_LOAD_IMAGE_COLOR);
 
-    Mat img;
-
-    /* vision main loop */
-    for (;;) {
-        camera >> img;      // get new frame from camera
-
-    //    i++;
-    //    imwrite(("./images/img" + to_string(i) + ".jpg"), img);
-
-        imshow("img", img);
-        if(waitKey(100) >= 0) break;
-
-        cout << "color: " << vision_check_color(img) << endl;
+    /* check for validity of image input */
+    if (!img.data ) {
+        cout <<  "Could not open or find the image." << endl ;
+        return -1;
     }
 
+    /* vision main loop */
+    //for (;;) {
+    //    Mat img;
+    //    /* get a new frame from camera */
+    //    cap >> img;
+    //}
+
+    imshow("img", img);
+
+    cout << "color: " << vision_check_color(img) << endl;
     //vision_triangle_detect(img);
 
-    //waitKey(0);
+    waitKey(0);
 
 	return 0;
 }
