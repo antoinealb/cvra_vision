@@ -5,6 +5,13 @@
 #include <iostream>
 #include <sstream>
 
+extern "C" {
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+}
+
 using namespace std;
 using namespace cv;
 
@@ -52,9 +59,6 @@ int vision_triangle_detect(Mat img)
     Mat img_filt = vision_triangle_filter_img(img_blur);
 
 #ifndef COMPILE_ON_ROBOT
-    /* display the different results */
-    namedWindow("Display window", WINDOW_AUTOSIZE);
-
     cout << "img.size: " << img.size() << endl;
     imshow("img", img);
     moveWindow("img", 0, 0);
@@ -107,7 +111,17 @@ char vision_check_color(Mat img)
 
 int main(int argc, char** argv)
 {
-    namedWindow("Display window", WINDOW_AUTOSIZE);
+    int sockfd;
+    struct sockaddr_in servaddr;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_port = htons(4242);
+
+    //namedWindow("Display window", WINDOW_AUTOSIZE);
 
     VideoCapture camera(0);     // open default camera
     if(!camera.isOpened())
@@ -130,11 +144,17 @@ int main(int argc, char** argv)
 
     //    i++;
     //    imwrite(("./images/img" + to_string(i) + ".jpg"), img);
-
+/*
         imshow("img", img);
         if(waitKey(100) >= 0) break;
+        */
 
-        cout << "color: " << vision_check_color(img) << endl;
+        char buf[2];
+        sprintf(buf, "%c", vision_check_color(img));
+
+        int ret = sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+        printf("ret: %d\n", ret);
+       // cout << "color: " << vision_check_color(img) << endl;
     }
 
     //vision_triangle_detect(img);
