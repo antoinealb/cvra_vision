@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
-project(triangle_detect)
+project(vision)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(triangle_detect triangle_detect.cpp)
+add_executable(vision vision.cpp)
 
-target_link_libraries(triangle_detect ${OpenCV_LIBS})
+target_link_libraries(vision ${OpenCV_LIBS})
