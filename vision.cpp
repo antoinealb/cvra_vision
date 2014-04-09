@@ -175,11 +175,20 @@ int main(int argc, char** argv)
     namedWindow("Display window", WINDOW_AUTOSIZE);
 #endif
 
-    //VideoCapture camera(0);     // open default camera
-    //if(!camera.isOpened())
-    //    return -1;
+    VideoCapture camera(0);     // open default camera
+    if(!camera.isOpened())
+        return -1;
 
-    if( argc != 2) {
+    VideoWriter video;      // open the output
+    video.open("video_match", CV_FOURCC('m', 'p', '4', 'v'), camera.get(CV_CAP_PROP_FPS), 
+        Size((int) camera.get(CV_CAP_PROP_FRAME_WIDTH), 
+            (int) camera.get(CV_CAP_PROP_FRAME_HEIGHT)), true);
+    if (!video.isOpened()) {
+        cout  << "Could not open the output video for write!" << endl;
+        return -1;
+    }
+
+    /*if( argc != 2) {
         printf( " No image data \n " );
         return -1;
     }
@@ -187,30 +196,30 @@ int main(int argc, char** argv)
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
         return -1;
-    }
+    }*/
 
     //int i = 0;
     //ostringstream s;
 
-    //Mat img;
+    Mat img;
 
     /* vision main loop */
-    //for (;;) {
-    //    camera >> img;      // get new frame from camera
+    for (;;) {
+        camera >> img;      // get new frame from camera
+        video.write(img);       // safe framge to video
 
     //    i++;
     //    imwrite(("./images/img" + to_string(i) + ".jpg"), img);
-/*
+
         imshow("img", img);
-        if(waitKey(100) >= 0) break;
-        */
+        if(waitKey(10) >= 0) break;
 
     //    char buf[2];
     //    sprintf(buf, "%c", vision_check_color(img));
 
-        //sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-       // cout << "color: " << vision_check_color(img) << endl;
-    //}
+    //    sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+    //    cout << "color: " << vision_check_color(img) << endl;
+    }
 
     //vision_triangle_detect(img);
 
