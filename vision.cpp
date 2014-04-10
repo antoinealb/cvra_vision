@@ -4,7 +4,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <iostream>
-#include <sstream>
 
 extern "C" {
 #include <sys/socket.h>
@@ -16,8 +15,8 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
-#define THRESH_RHO 20
-#define THRESH_THETA 0.1
+#define ANGULAR_DIFFERENCE(a1, a2) (abs(a1-a2))
+#define ANGULAR_THRESH 0.2
 
 #define HSV_SATURATION_MIN 127
 #define HSV_SATURATION_MAX 240
@@ -56,22 +55,29 @@ Mat vision_triangle_filter_img(Mat img)
 
 vector<Vec2f> vision_group_lines(vector<Vec2f> lines)
 {
-    /*vector<Vec2f> lines_grouped;
+    vector<Vec2f> lines_grouped;
     lines_grouped.push_back(lines[0]);
+    lines.erase(lines.begin());
 
-    for (int i = 1; i < lines.size(); i++) {
+    while (!lines.empty()) {
+        cout << "- [" << lines[0][0] << "," << lines[0][1] << "]" << endl;
+        cout << lines_grouped.size() << endl;
         for (int j = 0; j < lines_grouped.size(); j++) {
-            if (lines[i][1] > (lines_grouped[j][1] - THRESH_THETA) && 
-                lines[i][1] < (lines_grouped[j][1] + THRESH_THETA)) {
-                lines.erase(lines.begin() + i);
-                i--;
-                cout << "same" << endl;
+            cout << "-- [" << lines_grouped[j][0] << "," << lines_grouped[j][1] << "]" << endl;
+            if ((ANGULAR_DIFFERENCE(lines[0][1], lines_grouped[j][1])) < ANGULAR_THRESH) {
+                lines.erase(lines.begin());
                 break;
+            } else {
+                if (j == (lines_grouped.size() - 1)) {
+                    lines_grouped.push_back(lines[0]);
+                    lines.erase(lines.begin());
+                    break;
+                }
             }
         }
-    }*/
+    }
 
-    return lines;
+    return lines_grouped;
 }
 
 void vision_draw_line(Mat img, vector<Vec2f> lines){
@@ -101,8 +107,10 @@ int vision_triangle_detect(Mat img)
 
     vector<Vec2f> lines;
     HoughLines(img_edges, lines, 1, CV_PI/180, 50, 0, 0);
+    cout << "initial lines.size(): " << lines.size() << endl;
 
-    lines = vision_group_lines(lines);
+    if (lines.size() != 0)
+        lines = vision_group_lines(lines);
 
 #ifndef COMPILE_ON_ROBOT
     vision_draw_line(img, lines);
@@ -160,7 +168,8 @@ char vision_check_color(Mat img)
 
 int main(int argc, char** argv)
 {
-    /*int sockfd;
+#ifdef COMPILE_ON_ROBOT
+    int sockfd;
     struct sockaddr_in servaddr;
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -169,26 +178,19 @@ int main(int argc, char** argv)
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
     servaddr.sin_port = htons(4242);
-    */
+
+    int i = 0;
+#endif
 
 #ifndef COMPILE_ON_ROBOT
     namedWindow("Display window", WINDOW_AUTOSIZE);
 #endif
 
-    VideoCapture camera(0);     // open default camera
+/*    VideoCapture camera(0);     // open default camera
     if(!camera.isOpened())
-        return -1;
+        return -1;*/
 
-    VideoWriter video;      // open the output
-    video.open("video_match", CV_FOURCC('m', 'p', '4', 'v'), camera.get(CV_CAP_PROP_FPS), 
-        Size((int) camera.get(CV_CAP_PROP_FRAME_WIDTH), 
-            (int) camera.get(CV_CAP_PROP_FRAME_HEIGHT)), true);
-    if (!video.isOpened()) {
-        cout  << "Could not open the output video for write!" << endl;
-        return -1;
-    }
-
-    /*if( argc != 2) {
+    if( argc != 2) {
         printf( " No image data \n " );
         return -1;
     }
@@ -196,32 +198,33 @@ int main(int argc, char** argv)
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
         return -1;
-    }*/
+    }
 
-    //int i = 0;
-    //ostringstream s;
-
-    Mat img;
+//    Mat img;
 
     /* vision main loop */
-    for (;;) {
+/*    for (;;) {
         camera >> img;      // get new frame from camera
-        video.write(img);       // safe framge to video
 
-    //    i++;
-    //    imwrite(("./images/img" + to_string(i) + ".jpg"), img);
-
+#ifndef COMPILE_ON_ROBOT
         imshow("img", img);
         if(waitKey(10) >= 0) break;
 
-    //    char buf[2];
-    //    sprintf(buf, "%c", vision_check_color(img));
+        cout << "color: " << vision_check_color(img) << endl;
+#endif
 
-    //    sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
-    //    cout << "color: " << vision_check_color(img) << endl;
-    }
+#ifdef COMPILE_ON_ROBOT
+        char buf[2];
+        sprintf(buf, "%c", vision_check_color(img));
 
-    //vision_triangle_detect(img);
+        sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr *)&servaddr, sizeof(servaddr));
+
+        i++;
+        imwrite(("./images/img" + to_string(i) + ".jpg"), img);     // record series of images
+#endif
+    }*/
+
+    vision_triangle_detect(img);
 
 #ifndef COMPILE_ON_ROBOT
     waitKey(0);
