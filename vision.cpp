@@ -178,7 +178,7 @@ char vision_check_color(Mat img)
 
 int main(int argc, char** argv)
 {
-#ifdef COMPILE_ON_ROBOT
+/*#ifdef COMPILE_ON_ROBOT
     int sockfd;
     struct sockaddr_in servaddr;
 
@@ -189,17 +189,17 @@ int main(int argc, char** argv)
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
     servaddr.sin_port = htons(4242);
 
-#endif
+#endif*/
 
 #ifndef COMPILE_ON_ROBOT
     namedWindow("Display window", WINDOW_AUTOSIZE);
 #endif
 
-    VideoCapture camera(0);     // open default camera
+/*    VideoCapture camera(0);     // open default camera
     if(!camera.isOpened())
-        return -1;
+        return -1;*/
 
-/*    if( argc != 2) {
+    if( argc != 2) {
         printf( " No image data \n " );
         return -1;
     }
@@ -207,13 +207,13 @@ int main(int argc, char** argv)
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
         return -1;
-    }*/
+    }
 
-    Mat img, img_orig;
-    int i = 0;
+//    Mat img, img_orig;
+//    int i = 0;
 
     /* vision main loop */
-    for (;;) {
+/*    for (;;) {
         camera >> img >> img_orig;      // get new frame from camera
 
 #ifndef COMPILE_ON_ROBOT
@@ -233,9 +233,9 @@ int main(int argc, char** argv)
         imwrite(("./images/img" + to_string(i) + ".jpg"), img_orig);     // record series of images
         waitKey(200);
 #endif
-    }
+    }*/
 
-    //vision_triangle_detect(img);
+    vision_triangle_detect(img);
 
 #ifndef COMPILE_ON_ROBOT
     waitKey(0);
