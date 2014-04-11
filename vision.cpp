@@ -15,8 +15,9 @@ extern "C" {
 using namespace std;
 using namespace cv;
 
-#define ANGULAR_DIFFERENCE(a1, a2) (abs(a1-a2))
-#define ANGULAR_THRESH 0.2
+#define DIFFERENCE(n1, n2) (abs(n1 - n2))
+#define THETA_THRESH 0.2
+#define RHO_THRESH 20
 
 #define HSV_SATURATION_MIN 127
 #define HSV_SATURATION_MAX 240
@@ -64,7 +65,8 @@ vector<Vec2f> vision_group_lines(vector<Vec2f> lines)
         cout << lines_grouped.size() << endl;
         for (int j = 0; j < lines_grouped.size(); j++) {
             cout << "-- [" << lines_grouped[j][0] << "," << lines_grouped[j][1] << "]" << endl;
-            if ((ANGULAR_DIFFERENCE(lines[0][1], lines_grouped[j][1])) < ANGULAR_THRESH) {
+            if ((DIFFERENCE(lines[0][1], lines_grouped[j][1])) < THETA_THRESH && 
+                DIFFERENCE(lines[0][0], lines_grouped[j][0]) < RHO_THRESH) {
                 lines.erase(lines.begin());
                 break;
             } else {
@@ -107,8 +109,8 @@ int vision_triangle_detect(Mat img)
 
     vector<Vec2f> lines;
     HoughLines(img_edges, lines, 1, CV_PI/180, 50, 0, 0);
-    vision_draw_line(img, lines);
-        float rho = 80, theta = 1.9;
+    //vision_draw_line(img, lines);
+    /*    float rho = -25, theta = 2.3;
         Point pt1, pt2;
         double a = cos(theta), b = sin(theta);
         double x0 = a*rho, y0 = b*rho;
@@ -116,7 +118,7 @@ int vision_triangle_detect(Mat img)
         pt1.y = cvRound(y0 + 1000*(a));
         pt2.x = cvRound(x0 - 1000*(-b));
         pt2.y = cvRound(y0 - 1000*(a));
-        line(img, pt1, pt2, Scalar(0, 180, 255), 1, CV_AA);
+        line(img, pt1, pt2, Scalar(0, 180, 255), 1, CV_AA);*/
     cout << "initial lines.size(): " << lines.size() << endl;
 
     if (lines.size() != 0)
