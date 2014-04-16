@@ -54,7 +54,47 @@ Mat vision_triangle_filter_img(Mat img)
     return img_filt;
 }
 
-vector<Vec2f> vision_group_lines(vector<Vec2f> lines)
+vector<Vec2f> vision_lines_intersect(vector<Vec2f> lines_cart)
+{
+    vector<Vec2f> points;
+    Vec2f p;
+
+    for (int i = 0; i < lines_cart.size(); i++) {
+        for (int j = i + 1; j < lines_cart.size(); j++) {
+            p[0] = (lines_cart[j][1] - lines_cart[i][1]) / (lines_cart[i][0] - lines_cart[j][0]);
+            p[1] = lines_cart[i][0] * p[0] + lines_cart[i][1];
+
+            points.push_back(p);
+            cout << "points: " << p << endl;
+        }
+    }
+
+    return points;
+}
+
+vector<Vec2f> vision_lines_polar2cart(vector<Vec2f> lines)
+{
+    vector<Vec2f> lines_cart;
+    Vec2f y;        // cartesian form of line equation y = m*x + b, y=[m,b]
+    int rho = 0, theta = 0;
+
+    for (int i = 0; i < lines.size(); i++) {
+        
+        if (lines[i][0] >= 0) {
+            y[0] = -(cos(lines[i][1]) / sin(lines[i][1]));
+            y[1] = lines[i][0] / sin(lines[i][1]);
+        } else {
+            y[0] = -(cos(lines[i][1]) / sin(lines[i][1]));
+            y[1] = -(abs(lines[i][0]) / sin(lines[i][1]));
+        }
+
+        lines_cart.push_back(y);
+    }
+
+    return lines_cart;
+}
+
+vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
 {
     vector<Vec2f> lines_grouped;
     lines_grouped.push_back(lines[0]);
@@ -82,9 +122,10 @@ vector<Vec2f> vision_group_lines(vector<Vec2f> lines)
     return lines_grouped;
 }
 
-void vision_draw_line(Mat img, vector<Vec2f> lines){
+void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, vector<Vec2f> points){
+    cout << "\nlines: \n";
     for (int i = 0; i < lines.size(); i++ ) {
-        cout << "[" << lines[i][0] << "," << lines[i][1] << "]" << endl;
+        cout << "  [" << lines[i][0] << "," << lines[i][1] << "]" << endl;
         float rho = lines[i][0], theta = lines[i][1];
         Point pt1, pt2;
         double a = cos(theta), b = sin(theta);
@@ -93,7 +134,21 @@ void vision_draw_line(Mat img, vector<Vec2f> lines){
         pt1.y = cvRound(y0 + 1000*(a));
         pt2.x = cvRound(x0 - 1000*(-b));
         pt2.y = cvRound(y0 - 1000*(a));
-        line(img, pt1, pt2, Scalar(255, 0, 0), 1, CV_AA);
+        line(img, pt1, pt2, Scalar(255, 0, i*90), 1, CV_AA);
+    }
+
+    cout << "\nlines_cart: \n";
+    for (int i = 0; i < lines_cart.size(); i++) {
+        cout << "  [" << lines_cart[i][0] << "," << lines_cart[i][1] << "]" << endl;
+    }
+
+    cout << "\npoints: \n";
+    Point point;
+    for (int i = 0; i < points.size(); i++) {
+        point.x = (int)points[i][0];
+        point.y = (int)points[i][1];
+        circle(img, point, 10, Scalar(255, 200, 0));
+        cout << "  " << point << endl;
     }
 }
 
@@ -110,7 +165,7 @@ int vision_triangle_detect(Mat img)
     vector<Vec2f> lines;
     HoughLines(img_edges, lines, 1, CV_PI/180, 50, 0, 0);
     //vision_draw_line(img, lines);
-    /*    float rho = -25, theta = 2.3;
+        /*float rho = -25, theta = 1.7;
         Point pt1, pt2;
         double a = cos(theta), b = sin(theta);
         double x0 = a*rho, y0 = b*rho;
@@ -119,13 +174,19 @@ int vision_triangle_detect(Mat img)
         pt2.x = cvRound(x0 - 1000*(-b));
         pt2.y = cvRound(y0 - 1000*(a));
         line(img, pt1, pt2, Scalar(0, 180, 255), 1, CV_AA);*/
-    cout << "initial lines.size(): " << lines.size() << endl;
+    cout << "\ninitial lines.size(): " << lines.size() << endl << endl;
 
-    if (lines.size() != 0)
-        lines = vision_group_lines(lines);
+    vector<Vec2f> lines_cart, points;
+    if (lines.size() != 0) {
+        lines = vision_lines_group(lines);
+        lines_cart = vision_lines_polar2cart(lines);
+
+        points = vision_lines_intersect(lines_cart);
+    }
+
 
 #ifndef COMPILE_ON_ROBOT
-    vision_draw_line(img, lines);
+    vision_draw_line(img, lines, lines_cart, points);
 
     cout << "img.size: " << img.size() << endl;
     imshow("img", img);
