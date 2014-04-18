@@ -54,9 +54,44 @@ Mat vision_triangle_filter_img(Mat img)
     return img_filt;
 }
 
+char vision_pixel_color(Vec3b hsv_pixel)
+{
+    /* check if saturation and value are in a good range */
+    //if (hsv_pixel[1] >= HSV_SATURATION_MIN && hsv_pixel[1] <= HSV_SATURATION_MAX && 
+    //    hsv_pixel[2] >= HSV_VALUE_MIN && hsv_pixel[2] <= HSV_VALUE_MAX) {
+        /* check for colour */
+        if (hsv_pixel[0] >= HSV_RED_MIN || hsv_pixel[0] <= HSV_RED_MAX)
+            return 'r';
+        else if (hsv_pixel[0] >= HSV_YELLOW_MIN && hsv_pixel[0] <= HSV_YELLOW_MAX)
+            return 'y';
+    //}
+
+    return -1;
+}
+
+vector<Vec2f> vision_triangle_centroids(vector<Vec2f> edges)
+{
+    vector<Vec2f> centroids;
+    Vec2f point;
+
+    for (int i = 0; i < edges.size(); i++) {
+        for (int j = i + 1; j < edges.size(); j++) {
+            for (int k = j + 1; k < edges.size(); k++) {
+                point[0] = (edges[i][0] + edges[j][0] + edges[k][0]) / 3;
+                point[1] = (edges[i][1] + edges[j][1] + edges[k][1]) / 3;
+
+                //if (vision_pixel_color(hsv_pixel))
+                    centroids.push_back(point);
+            }
+        }
+    }
+
+    return centroids;
+}
+
 vector<Vec2f> vision_lines_intersect(vector<Vec2f> lines_cart)
 {
-    vector<Vec2f> points;
+    vector<Vec2f> edges;
     Vec2f p;
 
     for (int i = 0; i < lines_cart.size(); i++) {
@@ -64,12 +99,11 @@ vector<Vec2f> vision_lines_intersect(vector<Vec2f> lines_cart)
             p[0] = (lines_cart[j][1] - lines_cart[i][1]) / (lines_cart[i][0] - lines_cart[j][0]);
             p[1] = lines_cart[i][0] * p[0] + lines_cart[i][1];
 
-            points.push_back(p);
-            cout << "points: " << p << endl;
+            edges.push_back(p);
         }
     }
 
-    return points;
+    return edges;
 }
 
 vector<Vec2f> vision_lines_polar2cart(vector<Vec2f> lines)
@@ -122,7 +156,8 @@ vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
     return lines_grouped;
 }
 
-void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, vector<Vec2f> points){
+void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, vector<Vec2f> edges, 
+    vector<Vec2f> centroids){
     cout << "\nlines: \n";
     for (int i = 0; i < lines.size(); i++ ) {
         cout << "  [" << lines[i][0] << "," << lines[i][1] << "]" << endl;
@@ -142,12 +177,20 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, ve
         cout << "  [" << lines_cart[i][0] << "," << lines_cart[i][1] << "]" << endl;
     }
 
-    cout << "\npoints: \n";
+    cout << "\nedges: \n";
     Point point;
-    for (int i = 0; i < points.size(); i++) {
-        point.x = (int)points[i][0];
-        point.y = (int)points[i][1];
+    for (int i = 0; i < edges.size(); i++) {
+        point.x = (int)edges[i][0];
+        point.y = (int)edges[i][1];
         circle(img, point, 10, Scalar(255, 200, 0));
+        cout << "  " << point << endl;
+    }
+
+    cout << "\ncentroids: \n";
+    for (int i = 0; i < centroids.size(); i++) {
+        point.x = (int)centroids[i][0];
+        point.y = (int)centroids[i][1];
+        circle(img, point, 5, Scalar(0, 150, 255));
         cout << "  " << point << endl;
     }
 }
@@ -176,23 +219,23 @@ int vision_triangle_detect(Mat img)
         line(img, pt1, pt2, Scalar(0, 180, 255), 1, CV_AA);*/
     cout << "\ninitial lines.size(): " << lines.size() << endl << endl;
 
-    vector<Vec2f> lines_cart, points;
+    vector<Vec2f> lines_cart, edges, centroids;
     if (lines.size() != 0) {
         lines = vision_lines_group(lines);
         lines_cart = vision_lines_polar2cart(lines);
 
-        points = vision_lines_intersect(lines_cart);
+        edges = vision_lines_intersect(lines_cart);
+
+        centroids = vision_triangle_centroids(edges);
     }
 
 
 #ifndef COMPILE_ON_ROBOT
-    vision_draw_line(img, lines, lines_cart, points);
+    vision_draw_line(img, lines, lines_cart, edges, centroids);
 
-    cout << "img.size: " << img.size() << endl;
     imshow("img", img);
     moveWindow("img", 0, 0);
 
-    cout << "img_filt.size: " << img_filt.size() << endl;
     imshow("img_filt", img_filt);
     moveWindow("img_filt", 640, 0);
 #endif
@@ -215,16 +258,11 @@ char vision_check_color(Mat img)
     Vec3b hsv_pixel;
     for (int x = 0; x <= img.cols; x++) {
         for (int y = 0; y <= img.rows; y++) {
-            hsv_pixel = img.at<Vec3b>(y, x);   
-            /* check if saturation and value are in a good range */
-            //if (hsv_pixel[1] >= HSV_SATURATION_MIN && hsv_pixel[1] <= HSV_SATURATION_MAX && 
-            //    hsv_pixel[2] >= HSV_VALUE_MIN && hsv_pixel[2] <= HSV_VALUE_MAX) {
-                /* check for colour */
-                if (hsv_pixel[0] >= HSV_RED_MIN || hsv_pixel[0] <= HSV_RED_MAX)
-                    cnt_red++;
-                else if (hsv_pixel[0] >= HSV_YELLOW_MIN && hsv_pixel[0] <= HSV_YELLOW_MAX)
-                    cnt_yellow++;
-            //}
+            hsv_pixel = img.at<Vec3b>(y, x);
+            if (vision_pixel_color(hsv_pixel) == 'r')
+                cnt_red++;
+            else if (vision_pixel_color(hsv_pixel) == 'y')
+                cnt_yellow++;
         }
     }
 
@@ -282,7 +320,7 @@ int main(int argc, char** argv)
 #ifndef COMPILE_ON_ROBOT
         cout << "color: " << vision_check_color(img) << endl;
 
-        imshow("img", img_orig);
+        imshow("img", img);
         if(waitKey(10) >= 0) break;
 #endif
 
