@@ -20,13 +20,13 @@ using namespace cv;
 #define RHO_THRESH 20
 
 #define HSV_SATURATION_MIN 127
-#define HSV_SATURATION_MAX 240
+#define HSV_SATURATION_MAX 245
 #define HSV_VALUE_MIN 127
-#define HSV_VALUE_MAX 240
+#define HSV_VALUE_MAX 245
 #define HSV_RED_MIN 175
-#define HSV_RED_MAX 5
+#define HSV_RED_MAX 10
 #define HSV_YELLOW_MIN 15
-#define HSV_YELLOW_MAX 30
+#define HSV_YELLOW_MAX 35
 #define FRACTION_IMG_THRESH 0.75
 
 Mat vision_triangle_filter_img(Mat img)
@@ -158,7 +158,7 @@ vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
 
 void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, vector<Vec2f> edges, 
     vector<Vec2f> centroids){
-    cout << "\nlines: \n";
+    cout << "\nlines: " << lines.size() << endl;
     for (int i = 0; i < lines.size(); i++ ) {
         cout << "  [" << lines[i][0] << "," << lines[i][1] << "]" << endl;
         float rho = lines[i][0], theta = lines[i][1];
@@ -172,12 +172,12 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, ve
         line(img, pt1, pt2, Scalar(255, 0, i*90), 1, CV_AA);
     }
 
-    cout << "\nlines_cart: \n";
+    cout << "\nlines_cart: " << lines_cart.size() << endl;
     for (int i = 0; i < lines_cart.size(); i++) {
         cout << "  [" << lines_cart[i][0] << "," << lines_cart[i][1] << "]" << endl;
     }
 
-    cout << "\nedges: \n";
+    cout << "\nedges: " << edges.size() << endl;
     Point point;
     for (int i = 0; i < edges.size(); i++) {
         point.x = (int)edges[i][0];
@@ -186,13 +186,49 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, ve
         cout << "  " << point << endl;
     }
 
-    cout << "\ncentroids: \n";
+    cout << "\ncentroids: " << centroids.size() << endl;
     for (int i = 0; i < centroids.size(); i++) {
         point.x = (int)centroids[i][0];
         point.y = (int)centroids[i][1];
         circle(img, point, 5, Scalar(0, 150, 255));
         cout << "  " << point << endl;
     }
+}
+
+/* returns the dominant color that is above a certain threshhold
+   r: red, y: yellow, e: else
+ */
+char vision_check_color(Mat img)
+{
+    char color = '0';
+
+    medianBlur(img, img, 21);       // smooth color image 
+
+    imwrite("./img_part.jpg", img);
+
+    cvtColor(img, img, CV_BGR2HSV);
+
+    unsigned int cnt_red = 0, cnt_yellow = 0;
+    Vec3b hsv_pixel;
+    for (int x = 0; x <= img.cols; x++) {
+        for (int y = 0; y <= img.rows; y++) {
+            hsv_pixel = img.at<Vec3b>(y, x);
+            if (vision_pixel_color(hsv_pixel) == 'r')
+                cnt_red++;
+            else if (vision_pixel_color(hsv_pixel) == 'y')
+                cnt_yellow++;
+        }
+    }
+
+    /* testing if count in threshhold */
+    unsigned int cnt_thresh = img.cols * img.rows * FRACTION_IMG_THRESH;
+    if (cnt_red >= cnt_thresh)
+        return 'r';
+    else if (cnt_yellow >= cnt_thresh)
+        return 'y';
+
+    /* no colour found */
+    return 'e';
 }
 
 int vision_triangle_detect(Mat img)
@@ -227,6 +263,12 @@ int vision_triangle_detect(Mat img)
         edges = vision_lines_intersect(lines_cart);
 
         centroids = vision_triangle_centroids(edges);
+
+        if(lines.size() == 3) {
+            Mat img_part;
+            img(Rect(centroids[0][0] - 10, centroids[0][1] - 10, 20, 20)).copyTo(img_part);
+            cout << "Color of triangle: " << vision_check_color(img_part) << endl;
+        }
     }
 
 
@@ -241,40 +283,6 @@ int vision_triangle_detect(Mat img)
 #endif
 
     return 0;
-}
-
-/* returns the dominant color that is above a certain threshhold
-   r: red, y: yellow, e: else
- */
-char vision_check_color(Mat img)
-{
-    char color = '0';
-
-    medianBlur(img, img, 21);       // smooth color image 
-
-    cvtColor(img, img, CV_BGR2HSV);
-
-    unsigned int cnt_red = 0, cnt_yellow = 0;
-    Vec3b hsv_pixel;
-    for (int x = 0; x <= img.cols; x++) {
-        for (int y = 0; y <= img.rows; y++) {
-            hsv_pixel = img.at<Vec3b>(y, x);
-            if (vision_pixel_color(hsv_pixel) == 'r')
-                cnt_red++;
-            else if (vision_pixel_color(hsv_pixel) == 'y')
-                cnt_yellow++;
-        }
-    }
-
-    /* testing if count in threshhold */
-    unsigned int cnt_thresh = img.cols * img.rows * FRACTION_IMG_THRESH;
-    if (cnt_red >= cnt_thresh)
-        return 'r';
-    else if (cnt_yellow >= cnt_thresh)
-        return 'y';
-
-    /* no colour found */
-    return 'e';
 }
 
 int main(int argc, char** argv)
