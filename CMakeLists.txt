@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
-project(take_pic)
+project(vision)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(take_pic take_pic.cpp)
+add_executable(vision vision.cpp)
 
-target_link_libraries(take_pic ${OpenCV_LIBS})
+target_link_libraries(vision ${OpenCV_LIBS})

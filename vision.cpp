@@ -69,10 +69,14 @@ char vision_pixel_color(Vec3b hsv_pixel)
     return -1;
 }
 
-vector<Point2f> vision_triangle_centroids(vector<Point2f> edges)
+// TODO: use hsv image
+vector<Point2f> vision_triangle_centroids(vector<Point2f> edges, Mat img)
 {
     vector<Point2f> centroids;
     Point2f point;
+    char color;
+
+    cout << "\ntriangle_centroids.size: " << edges.size() << endl;
 
     for (int i = 0; i < edges.size(); i++) {
         for (int j = i + 1; j < edges.size(); j++) {
@@ -80,7 +84,8 @@ vector<Point2f> vision_triangle_centroids(vector<Point2f> edges)
                 point.x = (edges[i].x + edges[j].x + edges[k].x) / 3;
                 point.y = (edges[i].y + edges[j].y + edges[k].y) / 3;
 
-                //if (vision_pixel_color(hsv_pixel))
+                color = vision_pixel_color(img.at<Vec3b>((int)point.x,(int)point.y));
+                if (color == 'r' || color == 'y')
                     centroids.push_back(point);
             }
         }
@@ -100,7 +105,8 @@ vector<Point2f> vision_lines_intersect(vector<Vec2f> lines_cart)
                 lines_cart[j][0]);
             p.y = lines_cart[i][0] * p.x + lines_cart[i][1];
 
-            edges.push_back(p);
+            if (p.x > 0 && p.y > 0 && p.x < 640 && p.y < 426)
+                edges.push_back(p);
         }
     }
 
@@ -177,7 +183,7 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     cout << "\nlines_cart: " << lines_cart.size() << endl;
     for (int i = 0; i < lines_cart.size(); i++) {
         //cout << "  [" << lines_cart[i][0] << "," << lines_cart[i][1] << "]" 
-            << endl;
+        //    << endl;
     }
 
     cout << "\nedges: " << edges.size() << endl;
@@ -291,11 +297,11 @@ int vision_triangle_detect(Mat img)
         lines_cart = vision_lines_polar2cart(lines);
 
 
-        if(lines.size() == 3) {
             edges = vision_lines_intersect(lines_cart);
 
-            centroids = vision_triangle_centroids(edges);
+            centroids = vision_triangle_centroids(edges, img);
 
+        if(lines.size() == 3) {
             Mat img_part;
             img(Rect(centroids[0].x - 10, centroids[0].y - 10, 20, 20)).copyTo(
                 img_part);
