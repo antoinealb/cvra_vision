@@ -61,14 +61,14 @@ unsigned char vision_pixel_color(Vec3b hsv_pixel)
     return ERROR;
 }
 
-vector<Triangle> vision_triangle_centroids(vector<Point2f> edges)
+vector<Triangle> vision_triangle_centroids(vector<Point2f> edges, Mat img)
 {
     vector<Triangle> triangles;
     struct Triangle tmp_triangle;
     vector<Point2f> centroids;
     Point2f point;
 
-    cout << "\ntriangle_centroids.size: " << edges.size() << endl;
+    cvtColor(img, img, CV_BGR2HSV);
 
     for (int i = 0; i < edges.size(); i++) {
         for (int j = i + 1; j < edges.size(); j++) {
@@ -76,9 +76,9 @@ vector<Triangle> vision_triangle_centroids(vector<Point2f> edges)
                 tmp_triangle.x = (edges[i].x + edges[j].x + edges[k].x) / 3;
                 tmp_triangle.y = (edges[i].y + edges[j].y + edges[k].y) / 3;
 
-                tmp_triangle.color = RED;
+                tmp_triangle.color = vision_pixel_color(img.at<Vec3b>((int)tmp_triangle.y, 
+                    (int)tmp_triangle.x));
 
-                //if (vision_pixel_color(hsv_pixel))
                 triangles.push_back(tmp_triangle);
             }
         }
@@ -227,7 +227,7 @@ Mat vision_take_picture()
 
     VideoCapture camera(0);     // open default camera
     if(!camera.isOpened()) {
-        cout << "Cam not open.";
+        cout << "Cam not opened.";
         //return -1;
     }
 
@@ -321,7 +321,7 @@ vector<Triangle> vision_triangle_detect()
         if(lines.size() == 3) {
             edges = vision_lines_intersect(lines_cart);
 
-            triangles = vision_triangle_centroids(edges);
+            triangles = vision_triangle_centroids(edges, img);
 
             /*Mat img_part;
             img(Rect(centroids[0].x - 10, centroids[0].y - 10, 20, 20)).copyTo(
