@@ -24,3 +24,4 @@ vector<Triangle> vision_triangle_detect();
    r: red, y: yellow, e: else
  */
 unsigned char vision_check_color();
+

@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 #endif
     }*/
 
-    vector<Triangle> triangle = vision_triangle_detect();
+    //vector<Triangle> triangle = vision_triangle_detect();
 
     /*unsigned char color = vision_check_color();
     cout << "\nColor: " << (int)color << endl;*/

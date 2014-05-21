@@ -191,34 +191,34 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     }
 }
 
-Point3f vision_img_coord_to_3d(Point2f pnt_img, bool horizontal)
+/* 10 mm: 48 pxl -> 24 pxl */
+Point2f vision_pxl2mm(Point2f pnt_pxl)
+{
+    Point2f pnt_mm;
+
+    pnt_mm.y = 0.3020833333 * pnt_pxl.y + 153.85;       /* 290/960 = 0.302083... */
+    pnt_mm.x = pnt_pxl.x;
+
+    return pnt_mm;
+}
+
+Point3f vision_img_coord_to_3d(Point2f pnt_pxl, bool horizontal)
 {
     float height_triangle;  /* height over the table */
-    /* initialize camera matrix (see camera_data_matrix.xml) */
-    float data_mat[9] = {0.000693407496133f, 0.0f, 
-        -0.443434093777100f, 0.0f, 0.000693407496133f, -0.332488894395808f, 
-        0.0f, 0.0f, 1.000000000000000f};
-    Mat cam_mat_inv(3, 3, CV_32FC1, data_mat);
 
-    cout << "\npoint_image: " << pnt_img << endl;
+    pnt_pxl.y = 960 - pnt_pxl.y;        /* camera at bottom of picture */
 
-    float data_pnt[3] = {pnt_img.x, pnt_img.y, 1};
-    Mat pnt_img_homogene(3, 1, CV_32FC1, data_pnt);
-
-    pnt_img_homogene = pnt_img_homogene * 140/220;  /* conversion to mm */
-    pnt_img_homogene = cam_mat_inv * pnt_img_homogene;
-
-    cout << "\nres: " << pnt_img_homogene << endl;
+    Point2f pnt_mm = vision_pxl2mm(pnt_pxl);
+    cout << pnt_mm.y << endl;
 
     if (horizontal)
         height_triangle = 36;       /* centroid if triangle horizontal */
     else
         height_triangle = 40.4;     /* centroid if triangle vertical */
 
-    Point3f pnt_img_homo(pnt_img_homogene.at<float>(0,0) * height_triangle, 
-        pnt_img_homogene.at<float>(0,1) * height_triangle, height_triangle);
+    Point3f pnt_3d(pnt_mm.x, pnt_mm.y, height_triangle);
 
-    return pnt_img_homo;
+    return pnt_3d;
 }
 
 Mat vision_take_picture()
@@ -238,7 +238,7 @@ Mat vision_take_picture()
 
 Mat vision_open_picture()
 {
-    Mat img = imread("./img_part1.jpg"/*"../logitech_c310_samples02/img01.jpg"*/, CV_LOAD_IMAGE_COLOR);   // image as argument
+    Mat img = imread("./img_part1.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
         //return -1;
