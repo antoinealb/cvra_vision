@@ -3,6 +3,6 @@ project(vision)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(vision vision.cpp)
+add_executable(vision main.cpp vision.cpp)
 
 target_link_libraries(vision ${OpenCV_LIBS})

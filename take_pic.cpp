@@ -38,11 +38,6 @@ int main(int argc, char** argv)
 
     imwrite(argv[1], img);		// record series of images
 
-#ifndef COMPILE_ON_ROBOT
-    imshow("img", img);
-    if(waitKey(10) >= 0)
-#endif
-
 /*#ifdef COMPILE_ON_ROBOT
     char buf[2];
     sprintf(buf, "%c", vision_check_color(img));
