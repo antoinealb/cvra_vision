@@ -15,7 +15,9 @@ const unsigned char ERROR = 2;
 struct Triangle {
    	float x;
    	float y;
+   	float z;
     unsigned char color;
+    bool horizontal;
 };
 
 vector<Triangle> vision_triangle_detect();

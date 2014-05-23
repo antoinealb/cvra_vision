@@ -65,8 +65,6 @@ vector<Triangle> vision_triangle_centroids(vector<Point2f> edges, Mat img)
 {
     vector<Triangle> triangles;
     struct Triangle tmp_triangle;
-    vector<Point2f> centroids;
-    Point2f point;
 
     cvtColor(img, img, CV_BGR2HSV);
 
@@ -75,9 +73,12 @@ vector<Triangle> vision_triangle_centroids(vector<Point2f> edges, Mat img)
             for (int k = j + 1; k < edges.size(); k++) {
                 tmp_triangle.x = (edges[i].x + edges[j].x + edges[k].x) / 3;
                 tmp_triangle.y = (edges[i].y + edges[j].y + edges[k].y) / 3;
+                tmp_triangle.z = 0;
 
                 tmp_triangle.color = vision_pixel_color(img.at<Vec3b>((int)tmp_triangle.y, 
                     (int)tmp_triangle.x));
+
+                tmp_triangle.horizontal = true;
 
                 triangles.push_back(tmp_triangle);
             }
@@ -190,38 +191,39 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
         pnt_tmp.x = triangles[i].x;
         pnt_tmp.y = triangles[i].y;
         circle(img, pnt_tmp, 5, Scalar(255, 0, 0));
-        cout << "\ntriangles_centeroid: " << pnt_tmp << endl;
+        cout << "\ntriangles_centeroid: " << triangles[i].x << ", " << triangles[i].y << ", " << 
+            triangles[i].z << endl;
     }
 }
 
 /* 10 mm: 48 pxl -> 24 pxl */
-Point2f vision_pxl2mm(Point2f pnt_pxl)
+Triangle vision_pxl2mm(Triangle triangle)
 {
     Point2f pnt_mm;
 
-    pnt_mm.y = 0.3020833333 * pnt_pxl.y + 153.85;       /* 290/960 = 0.302083... */
-    pnt_mm.x = pnt_pxl.x;
+    triangle.x = triangle.x;
+    /* see img_to_3d_interpol.m to find fomula */
+    triangle.y = 0.639124976364529 + 0.420199226762668 * triangle.y + 
+        -0.000123372385815 * pow(triangle.y,2);
 
-    return pnt_mm;
+    cout << "\npxl_mm: " << triangle.x << ", " << triangle.y << endl;
+
+    return triangle;
 }
 
-Point3f vision_img_coord_to_3d(Point2f pnt_pxl, bool horizontal)
+Triangle vision_img_coord_to_3d(Triangle triangle)
 {
     float height_triangle;  /* height over the table */
 
-    pnt_pxl.y = 960 - pnt_pxl.y;        /* camera at bottom of picture */
+    triangle = vision_pxl2mm(triangle);
+    triangle.y = 355.5 - triangle.y + 88.85;
 
-    Point2f pnt_mm = vision_pxl2mm(pnt_pxl);
-    cout << pnt_mm.y << endl;
-
-    if (horizontal)
-        height_triangle = 36;       /* centroid if triangle horizontal */
+    if (triangle.horizontal)
+        triangle.z = 36;        /* centroid if triangle horizontal */
     else
-        height_triangle = 40.4;     /* centroid if triangle vertical */
+        triangle.z = 40.4;      /* centroid if triangle vertical */
 
-    Point3f pnt_3d(pnt_mm.x, pnt_mm.y, height_triangle);
-
-    return pnt_3d;
+    return triangle;
 }
 
 Mat vision_take_picture()
@@ -325,6 +327,7 @@ vector<Triangle> vision_triangle_detect()
             edges = vision_lines_intersect(lines_cart);
 
             triangles = vision_triangle_centroids(edges, img);
+            triangles[0] = vision_img_coord_to_3d(triangles[0]);
 
             /*Mat img_part;
             img(Rect(centroids[0].x - 10, centroids[0].y - 10, 20, 20)).copyTo(
