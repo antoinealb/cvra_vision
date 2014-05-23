@@ -185,9 +185,12 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     }
 
     cout << "\ntriangles: " << triangles.size() << endl;
+    Point2f pnt_tmp;
     for (int i = 0; i < triangles.size(); i++) {
-        //circle(img, triangles[i].centroid, 5, Scalar(0, 150, 255));
-        //cout << "  " << triangles[i] << endl;
+        pnt_tmp.x = triangles[i].x;
+        pnt_tmp.y = triangles[i].y;
+        circle(img, pnt_tmp, 5, Scalar(255, 0, 0));
+        cout << "\ntriangles_centeroid: " << pnt_tmp << endl;
     }
 }
 
@@ -338,7 +341,6 @@ vector<Triangle> vision_triangle_detect()
         }*/
     }
 
-/*
 #ifndef COMPILE_ON_ROBOT
     vision_draw_line(img, lines, lines_cart, edges, triangles);
 
@@ -347,7 +349,7 @@ vector<Triangle> vision_triangle_detect()
 
     imshow("img_filt", img_filt);
     moveWindow("img_filt", 640, 0);
-#endif*/
+#endif
 
     return triangles;
 }
