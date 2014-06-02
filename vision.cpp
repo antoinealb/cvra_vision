@@ -1,12 +1,5 @@
 #include "vision.hpp"
 
-/*extern "C" {
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <stdio.h>
-}*/
-
 #define DIFFERENCE(n1, n2) (abs(n1 - n2))
 #define THETA_THRESH 0.4
 #define RHO_THRESH 40
@@ -49,14 +42,11 @@ Mat vision_triangle_filter_img(Mat img)
 unsigned char vision_pixel_color(Vec3b hsv_pixel)
 {
     /* check if saturation and value are in a good range */
-    //if (hsv_pixel[1] >= HSV_SATURATION_MIN && hsv_pixel[1] <= HSV_SATURATION_MAX && 
-    //    hsv_pixel[2] >= HSV_VALUE_MIN && hsv_pixel[2] <= HSV_VALUE_MAX) {
-        /* check for colour */
-        if (hsv_pixel[0] >= HSV_RED_MIN || hsv_pixel[0] <= HSV_RED_MAX)
-            return RED;
-        else if (hsv_pixel[0] >= HSV_YELLOW_MIN && hsv_pixel[0] <= HSV_YELLOW_MAX)
-            return YELLOW;
-    //}
+    /* check for colour */
+    if (hsv_pixel[0] >= HSV_RED_MIN || hsv_pixel[0] <= HSV_RED_MAX)
+        return RED;
+    else if (hsv_pixel[0] >= HSV_YELLOW_MIN && hsv_pixel[0] <= HSV_YELLOW_MAX)
+        return YELLOW;
 
     return ERROR;
 }
@@ -75,7 +65,7 @@ vector<Triangle> vision_triangle_centroids(vector<Point2f> edges, Mat img)
                 tmp_triangle.y = (edges[i].y + edges[j].y + edges[k].y) / 3;
                 tmp_triangle.z = 0;
 
-                tmp_triangle.color = vision_pixel_color(img.at<Vec3b>((int)tmp_triangle.y, 
+                tmp_triangle.color = vision_pixel_color(img.at<Vec3b>((int)tmp_triangle.y,
                     (int)tmp_triangle.x));
 
                 tmp_triangle.horizontal = true;
@@ -98,8 +88,7 @@ vector<Point2f> vision_lines_intersect(vector<Vec2f> lines_cart)
             p.x = (lines_cart[j][1] - lines_cart[i][1]) / (lines_cart[i][0] - lines_cart[j][0]);
             p.y = lines_cart[i][0] * p.x + lines_cart[i][1];
 
-            //if (p.x > 0 && p.y > 0 && p.x < 640 && p.y < 426)
-                edges.push_back(p);
+            edges.push_back(p);
         }
     }
 
@@ -113,7 +102,7 @@ vector<Vec2f> vision_lines_polar2cart(vector<Vec2f> lines)
     int rho = 0, theta = 0;
 
     for (int i = 0; i < lines.size(); i++) {
-        
+
         if (lines[i][0] >= 0) {
             y[0] = -(cos(lines[i][1]) / sin(lines[i][1]));
             y[1] = lines[i][0] / sin(lines[i][1]);
@@ -138,9 +127,9 @@ vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
         cout << "- [" << lines[0][0] << "," << lines[0][1] << "]" << endl;
         cout << lines_grouped.size() << endl;
         for (int j = 0; j < lines_grouped.size(); j++) {
-            cout << "-- [" << lines_grouped[j][0] << "," << lines_grouped[j][1] 
+            cout << "-- [" << lines_grouped[j][0] << "," << lines_grouped[j][1]
                 << "]" << endl;
-            if ((DIFFERENCE(lines[0][1], lines_grouped[j][1])) < THETA_THRESH && 
+            if ((DIFFERENCE(lines[0][1], lines_grouped[j][1])) < THETA_THRESH &&
                 DIFFERENCE(lines[0][0], lines_grouped[j][0]) < RHO_THRESH) {
                 lines.erase(lines.begin());
                 break;
@@ -157,7 +146,7 @@ vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
     return lines_grouped;
 }
 
-void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart, 
+void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     vector<Point2f> edges, vector<Triangle> triangles){
     cout << "\nlines: " << lines.size() << endl;
     for (int i = 0; i < lines.size(); i++ ) {
@@ -174,15 +163,10 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     }
 
     cout << "\nlines_cart: " << lines_cart.size() << endl;
-    for (int i = 0; i < lines_cart.size(); i++) {
-        //cout << "  [" << lines_cart[i][0] << "," << lines_cart[i][1] << "]" 
-        //    << endl;
-    }
 
     cout << "\nedges: " << edges.size() << endl;
     for (int i = 0; i < edges.size(); i++) {
         circle(img, edges[i], 10, Scalar(255, 200, 0));
-        //cout << "  " << edges[i] << endl;
     }
 
     cout << "\ntriangles: " << triangles.size() << endl;
@@ -191,7 +175,7 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
         pnt_tmp.x = triangles[i].x;
         pnt_tmp.y = triangles[i].y;
         circle(img, pnt_tmp, 5, Scalar(255, 0, 0));
-        cout << "\ntriangles_centeroid: " << triangles[i].x << ", " << triangles[i].y << ", " << 
+        cout << "\ntriangles_centeroid: " << triangles[i].x << ", " << triangles[i].y << ", " <<
             triangles[i].z << endl;
     }
 }
@@ -203,7 +187,7 @@ Triangle vision_pxl2mm(Triangle triangle)
 
     triangle.x = triangle.x;
     /* see img_to_3d_interpol.m to find fomula */
-    triangle.y = 0.639124976364529 + 0.420199226762668 * triangle.y + 
+    triangle.y = 0.639124976364529 + 0.420199226762668 * triangle.y +
         -0.000123372385815 * pow(triangle.y,2);
 
     cout << "\npxl_mm: " << triangle.x << ", " << triangle.y << endl;
@@ -233,7 +217,6 @@ Mat vision_take_picture()
     VideoCapture camera(0);     // open default camera
     if(!camera.isOpened()) {
         cout << "Cam not opened.";
-        //return -1;
     }
 
     camera >> img;
@@ -246,7 +229,6 @@ Mat vision_open_picture()
     Mat img = imread("./img_part1.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
-        //return -1;
     }
 
     return img;
@@ -261,7 +243,7 @@ unsigned char vision_check_color()
 
     Mat img = vision_open_picture();
 
-    medianBlur(img, img, 21);       // smooth color image 
+    medianBlur(img, img, 21);       // smooth color image
 
     cvtColor(img, img, CV_BGR2HSV);
 
@@ -304,21 +286,10 @@ vector<Triangle> vision_triangle_detect()
 
     vector<Vec2f> lines;
     HoughLines(img_edges, lines, 1, CV_PI/180, 50, 0, 0);
-    //vision_draw_line(img, lines);
-        /*float rho = -25, theta = 1.7;
-        Point pt1, pt2;
-        double a = cos(theta), b = sin(theta);
-        double x0 = a*rho, y0 = b*rho;
-        pt1.x = cvRound(x0 + 2000*(-b));
-        pt1.y = cvRound(y0 + 2000*(a));
-        pt2.x = cvRound(x0 - 2000*(-b));
-        pt2.y = cvRound(y0 - 2000*(a));
-        line(img, pt1, pt2, Scalar(0, 180, 255), 1, CV_AA);*/
     cout << "\ninitial lines.size(): " << lines.size() << endl << endl;
 
     vector<Vec2f> lines_cart;
     vector<Point2f> edges;
-    //vector<Point3f> centroids_robot;
     if (lines.size() != 0) {
         lines = vision_lines_group(lines);
         lines_cart = vision_lines_polar2cart(lines);
@@ -329,19 +300,7 @@ vector<Triangle> vision_triangle_detect()
             triangles = vision_triangle_centroids(edges, img);
             triangles[0] = vision_img_coord_to_3d(triangles[0]);
 
-            /*Mat img_part;
-            img(Rect(centroids[0].x - 10, centroids[0].y - 10, 20, 20)).copyTo(
-                img_part);
-            cout << "\nColor of triangle: " << vision_check_color(img_part) << endl;*/
-
-            /*bool horizontal = true;
-
-            centroids_robot.push_back(vision_img_coord_to_3d(centroids[0], 
-                horizontal));
-            cout << "\ncentroids_robot: " << centroids_robot[0] << endl;*/
-        } /*else {
-            return -1;
-        }*/
+        }
     }
 
 #ifndef COMPILE_ON_ROBOT
