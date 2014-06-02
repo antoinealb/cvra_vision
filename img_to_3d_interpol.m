@@ -6,7 +6,6 @@ x_pxl = [24, 48, 72, 96, 122, 147, 174, 200, 228, 254, ...
 y_mm = [10:10:290];                                         % [mm] distance from top of image
 
 P = polyfit(x_pxl, y_mm, 2)
-f = @(x) P(3) + P(2).*x + P(1).*x.^2;
 
 figure;
-plot(x_pxl, y_mm, 'b', x_pxl, f(x_pxl), 'r');
+plot(x_pxl, y_mm, 'b', x_pxl, polyval(P, x_pxl), 'r');
