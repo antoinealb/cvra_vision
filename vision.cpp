@@ -273,8 +273,11 @@ vector<Triangle> vision_triangle_detect()
 {
     vector<Triangle> triangles;
 
-    //Mat img = vision_take_picture();
+#ifdef COMPILE_ON_ROBOT
+    Mat img = vision_take_picture();
+#else
     Mat img = vision_open_picture();
+#endif
 
     /* smooth color image */
     GaussianBlur(img, img, Size(11, 11), 0, 0);
