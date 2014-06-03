@@ -4,9 +4,9 @@ import ctypes
 
 VISION = ctypes.cdll.LoadLibrary("./build/libvision.so")
 
-YELLOW = ctypes.c_ubyte(VISION, "YELLOW")
-RED = ctypes.c_ubyte(VISION, "RED")
-ERROR = ctypes.c_ubyte(VISION, "ERROR")
+YELLOW = ctypes.c_ubyte.in_dll(VISION, "YELLOW").value
+RED = ctypes.c_ubyte.in_dll(VISION, "RED").value
+ERROR = ctypes.c_ubyte.in_dll(VISION, "ERROR").value
 
 class CTriangle(ctypes.Structure):
     "ctypes wrapper for Triangle struct in vision"
