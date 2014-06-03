@@ -1,6 +1,7 @@
 
 *.png
 *.jpg
+*.zip
 
 CMakeFiles/*
 
