@@ -54,7 +54,7 @@ unsigned char vision_pixel_color(Vec3b hsv_pixel)
 vector<Triangle> vision_triangle_centroids(vector<Point2f> edges, Mat img)
 {
     vector<Triangle> triangles;
-    struct Triangle tmp_triangle;
+    Triangle tmp_triangle;
 
     cvtColor(img, img, CV_BGR2HSV);
 
