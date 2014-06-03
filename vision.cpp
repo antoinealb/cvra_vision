@@ -322,6 +322,10 @@ vector<Triangle> vision_triangle_detect()
 TriangleIterator * getTriangles()
 {
     TriangleIterator * iter = new TriangleIterator();
+    if(iter == NULL)
+    {
+        return NULL;
+    }
     iter->triangles = vision_triangle_detect();
     iter->current_index = 0;
     return iter;
@@ -334,10 +338,43 @@ void deleteTriangleIterator(TriangleIterator * iter)
 
 bool hasNext(TriangleIterator * iter)
 {
-    return (iter->current_index < iter->triangles.size()) ? 1 : 0;
+    if(iter == NULL)
+    {
+        return false;
+    }
+    return (iter->current_index < iter->triangles.size());
 }
 
-Triangle next(TriangleIterator * iter)
+Triangle * next(TriangleIterator * iter)
 {
-    return iter->triangles[iter->current_index++];
+    if(iter == NULL)
+    {
+        return NULL;
+    }
+    return &(iter->triangles[iter->current_index++]);
+}
+
+float getX(Triangle * t)
+{ 
+    return t->x;
+}
+
+float getY(Triangle * t)
+{ 
+    return t->y;
+}
+
+float getZ(Triangle * t)
+{ 
+    return t->z;
+}
+
+unsigned char getColor(Triangle * t)
+{ 
+    return t->color;
+}
+
+bool getHorizontal(Triangle * t)
+{ 
+    return t->horizontal; 
 }
