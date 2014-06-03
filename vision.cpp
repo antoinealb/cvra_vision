@@ -318,3 +318,26 @@ vector<Triangle> vision_triangle_detect()
 
     return triangles;
 }
+
+TriangleIterator * getTriangles()
+{
+    TriangleIterator * iter = new TriangleIterator();
+    iter->triangles = vision_triangle_detect();
+    iter->current_index = 0;
+    return iter;
+}
+
+void deleteTriangleIterator(TriangleIterator * iter)
+{
+    delete iter;
+}
+
+unsigned char hasNext(TriangleIterator * iter)
+{
+    return (iter->current_index < iter->triangles.size()) ? 1 : 0;
+}
+
+Triangle next(TriangleIterator * iter)
+{
+    return iter->triangles[iter->current_index++];
+}
