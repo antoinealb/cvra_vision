@@ -9,9 +9,9 @@ using namespace std;
 using namespace cv;
 
 extern "C" {
-    const unsigned char YELLOW = 0;
-    const unsigned char RED = 1;
-    const unsigned char ERROR = 2;
+    extern const unsigned char YELLOW = 0;
+    extern const unsigned char RED = 1;
+    extern const unsigned char ERROR = 2;
 
     typedef struct triangle_iterator_t TriangleIterator;
     typedef struct triangle_t Triangle;
