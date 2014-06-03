@@ -23,7 +23,7 @@ extern "C" {
 
     typedef struct triangle_iterator_t TriangleIterator;
 
-    unsigned char hasNext(TriangleIterator * iter);
+    bool hasNext(TriangleIterator * iter);
     Triangle next(TriangleIterator * iter);
 
     TriangleIterator * getTriangles(void);

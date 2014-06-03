@@ -332,7 +332,7 @@ void deleteTriangleIterator(TriangleIterator * iter)
     delete iter;
 }
 
-unsigned char hasNext(TriangleIterator * iter)
+bool hasNext(TriangleIterator * iter)
 {
     return (iter->current_index < iter->triangles.size()) ? 1 : 0;
 }
