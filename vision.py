@@ -41,7 +41,7 @@ HASNEXT.restype = ctypes.c_bool
 
 NEXT = VISION.next
 NEXT.argtypes = [ctypes.POINTER(CTriangleIterator)]
-NEXT.restype = CTriangle
+NEXT.restype = ctypes.POINTER(CTriangle)
 
 GETTRIANGLES = VISION.getTriangles
 GETTRIANGLES.argtypes = []
@@ -84,11 +84,11 @@ class Triangle(object):
 
     def __init__(self, ctriangleref):
         "initialize from CTriangle"
-        self.xpos = GETX(ctriangleref).value
-        self.ypos = GETY(ctriangleref).value
-        self.zpos = GETZ(ctriangleref).value
-        self.color = GETCOLOR(ctriangleref).value
-        self.horizontal = GETHORIZ(ctriangleref).value
+        self.xpos = GETX(ctriangleref)
+        self.ypos = GETY(ctriangleref)
+        self.zpos = GETZ(ctriangleref)
+        self.color = GETCOLOR(ctriangleref)
+        self.horizontal = GETHORIZ(ctriangleref)
 
 def get_triangles():
     "Iterator over all triangles as Python object.."
