@@ -2,7 +2,14 @@
 *.png
 *.jpg
 
+*.zip
+
+*.pyc
+
 CMakeFiles/*
+
+build/*
+
 
 CMakeCache.txt
 Makefile
