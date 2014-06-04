@@ -69,15 +69,13 @@ class Triangle(object):
         self.horizontal = GETHORIZ(ctriangleref).value
 
 def get_triangles():
-    "return python list with triangles as python objects"
+    "Iterator over all triangles as Python object.."
     iterator = GETTRIANGLES()
     result = []
     while HASNEXT(iterator):
-        result.append(Triangle(NEXT(iterator)))
+        yield Triangle(NEXT(iterator))
 
     DELETEITER(iterator)
-
-    return result
 
 def check_color():
     "wrap c checkcolor funtion"
