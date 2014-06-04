@@ -2,7 +2,25 @@
 
 import ctypes
 
-VISION = ctypes.cdll.LoadLibrary("./build/libvision.so")
+VISION = None
+
+try:
+    VISION = ctypes.cdll.LoadLibrary("./build/libvision.so")
+except OSError:
+    pass
+
+try:
+    VISION = ctypes.cdll.LoadLibrary("./build/libvision.dylib")
+except OSError:
+    pass
+
+try:
+    VISION = ctypes.cdll.LoadLibrary("./build/libvision.dll")
+except OSError:
+    pass
+
+if VISION is None:
+    raise OSError
 
 YELLOW = ctypes.c_ubyte.in_dll(VISION, "YELLOW").value
 RED = ctypes.c_ubyte.in_dll(VISION, "RED").value
