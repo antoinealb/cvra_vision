@@ -224,9 +224,16 @@ Mat vision_take_picture()
     return img;
 }
 
+void vision_write_picture()
+{
+    Mat img = vision_take_picture();
+
+    imwrite("img.jpg", img);
+}
+
 Mat vision_open_picture()
 {
-    Mat img = imread("./img_part1.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
+    Mat img = imread("../img_part1.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
     }

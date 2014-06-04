@@ -29,6 +29,8 @@ extern "C" {
     void deleteTriangleIterator(TriangleIterator * iter);
 
     unsigned char vision_check_color(void);
+
+    void vision_write_picture(void);
 }
 
 struct triangle_t {
