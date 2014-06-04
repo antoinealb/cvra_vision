@@ -75,6 +75,10 @@ GETHORIZ = VISION.getHorizontal
 GETHORIZ.argtypes = [ctypes.POINTER(CTriangle)]
 GETHORIZ.restype = ctypes.c_bool
 
+TAKEPIC = VISION.vision_write_picture
+TAKEPIC.argtypes = []
+TAKEPIC.restype = None
+
 class Triangle(object):
     "python triangle class"
 
@@ -97,3 +101,7 @@ def get_triangles():
 def check_color():
     "wrap c checkcolor funtion"
     return CHECKCOLOR().value
+
+def take_and_save_picture():
+    "take picture and save it to current working directory"
+    TAKEPIC()
