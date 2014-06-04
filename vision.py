@@ -71,7 +71,6 @@ class Triangle(object):
 def get_triangles():
     "Iterator over all triangles as Python object.."
     iterator = GETTRIANGLES()
-    result = []
     while HASNEXT(iterator):
         yield Triangle(NEXT(iterator))
 
