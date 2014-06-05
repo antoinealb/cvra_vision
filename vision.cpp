@@ -183,36 +183,6 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     }
 }
 
-/* 10 mm: 48 pxl -> 24 pxl */
-Triangle vision_pxl2mm(Triangle triangle)
-{
-    Point2f pnt_mm;
-
-    triangle.x = triangle.x;
-    /* see img_to_3d_interpol.m to find fomula */
-    triangle.y = 0.639124976364529 + 0.420199226762668 * triangle.y +
-        -0.000123372385815 * pow(triangle.y,2);
-
-    cout << "\npxl_mm: " << triangle.x << ", " << triangle.y << endl;
-
-    return triangle;
-}
-
-Triangle vision_img_coord_to_3d(Triangle triangle)
-{
-    float height_triangle;  /* height over the table */
-
-    triangle = vision_pxl2mm(triangle);
-    triangle.y = 355.5 - triangle.y + 88.85;
-
-    if (triangle.horizontal)
-        triangle.z = 36;        /* centroid if triangle horizontal */
-    else
-        triangle.z = 40.4;      /* centroid if triangle vertical */
-
-    return triangle;
-}
-
 Mat vision_take_picture()
 {
     Mat img;
@@ -311,8 +281,6 @@ vector<Triangle> vision_triangle_detect()
             edges = vision_lines_intersect(lines_cart);
 
             triangles = vision_triangle_centroids(edges, img);
-            //triangles[0] = vision_img_coord_to_3d(triangles[0]);
-
         }
     }
 
