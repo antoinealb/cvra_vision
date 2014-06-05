@@ -9,7 +9,7 @@ if(On_Robot)
     add_definitions(-DCOMPILE_ON_ROBOT)
 endif()
 
-add_library(vision SHARED vision.cpp)
+add_library(vision SHARED vision.cpp camera_transform.c)
 
 add_executable(main main.cpp)
 
