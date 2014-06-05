@@ -10,8 +10,8 @@
 #define HSV_VALUE_MAX 255
 #define HSV_RED_MIN 175
 #define HSV_RED_MAX 10
-#define HSV_YELLOW_MIN 15
-#define HSV_YELLOW_MAX 35
+#define HSV_YELLOW_MIN 25
+#define HSV_YELLOW_MAX 40
 #define FRACTION_IMG_THRESH 0.75
 
 Mat vision_triangle_filter_img(Mat img)
@@ -19,18 +19,17 @@ Mat vision_triangle_filter_img(Mat img)
     Mat img_hsv;
     cvtColor(img, img_hsv, CV_BGR2HSV);
 
-    /* green filter */
-    Mat img_filt_green;
-    inRange(img_hsv, Scalar(50, 0, 0), Scalar(100, 255, 255), img_filt_green);
-    /* black filter */
-    Mat img_filt_black;
-    inRange(img_hsv, Scalar(0, 0, 0), Scalar(255, 255, 65), img_filt_black);
-    /* saturation filter */
-    Mat img_filt_sat;
-    inRange(img_hsv, Scalar(0, 0, 0), Scalar(255, 125, 255), img_filt_sat);
+    /* red filter */
+    Mat img_filt_red1;
+    inRange(img_hsv, Scalar(0, 70, 140), Scalar(HSV_RED_MAX, 255, 255), img_filt_red1);
+    Mat img_filt_red2;
+    inRange(img_hsv, Scalar(HSV_RED_MIN, 70, 140), Scalar(255, 255, 255), img_filt_red2);
+    /* yellow filter */
+    Mat img_filt_yellow;
+    inRange(img_hsv, Scalar(HSV_YELLOW_MIN, 70, 140), Scalar(HSV_YELLOW_MAX, 255, 255), img_filt_yellow);
 
     /* total filtered image */
-    Mat img_filt = img_filt_green + img_filt_black + img_filt_sat;
+    Mat img_filt = img_filt_red1 + img_filt_red2 + img_filt_yellow;
 
     /* smoothing the filtered image */
     Mat struct_elem = getStructuringElement(MORPH_ELLIPSE, Size(5, 5));
@@ -233,7 +232,7 @@ void vision_write_picture()
 
 Mat vision_open_picture()
 {
-    Mat img = imread("../img_part1.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
+    Mat img = imread("../../test_img/img14.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
     }
