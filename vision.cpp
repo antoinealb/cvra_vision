@@ -1,4 +1,5 @@
 #include "vision.hpp"
+#include "camera_transform.hpp"
 
 #define DIFFERENCE(n1, n2) (abs(n1 - n2))
 #define THETA_THRESH 0.4
@@ -60,12 +61,15 @@ vector<Triangle> vision_triangle_centroids(vector<Point2f> edges, Mat img)
     for (int i = 0; i < edges.size(); i++) {
         for (int j = i + 1; j < edges.size(); j++) {
             for (int k = j + 1; k < edges.size(); k++) {
-                tmp_triangle.x = (edges[i].x + edges[j].x + edges[k].x) / 3;
-                tmp_triangle.y = (edges[i].y + edges[j].y + edges[k].y) / 3;
+                unsigned int x = (unsigned int)((edges[i].x + edges[j].x + edges[k].x) / 3);
+                unsigned int y = (unsigned int)((edges[i].y + edges[j].y + edges[k].y) / 3);
+                Pos centroid_pos = px_to_pos(x,y,0);
+                tmp_triangle.x = centroid_pos.x;
+                tmp_triangle.y = centroid_pos.y;
                 tmp_triangle.z = 0;
 
-                tmp_triangle.color = vision_pixel_color(img.at<Vec3b>((int)tmp_triangle.y,
-                    (int)tmp_triangle.x));
+                tmp_triangle.color = vision_pixel_color(img.at<Vec3b>((int)y,
+                    (int)x));
 
                 tmp_triangle.horizontal = true;
 
@@ -232,7 +236,7 @@ void vision_write_picture()
 
 Mat vision_open_picture()
 {
-    Mat img = imread("../../test_img/img14.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
+    Mat img = imread("../testimages/test_img/img08.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
     }
@@ -307,7 +311,7 @@ vector<Triangle> vision_triangle_detect()
             edges = vision_lines_intersect(lines_cart);
 
             triangles = vision_triangle_centroids(edges, img);
-            triangles[0] = vision_img_coord_to_3d(triangles[0]);
+            //triangles[0] = vision_img_coord_to_3d(triangles[0]);
 
         }
     }
