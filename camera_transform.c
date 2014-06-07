@@ -39,14 +39,13 @@ static void init(void)
     horiz_rd_per_px = camera_horizontal_opening_angle / PX_WIDTH;
     vert_rd_per_px = camera_vertical_opening_angle / PX_HEIGHT;
 
-
-    printf("\n");
-    printf("base: %f, top: %f, horiz_opening: %f\n",theta_bottom,theta_top,camera_horizontal_opening_angle);
+    //printf("\n");
+    //printf("base: %f, top: %f, horiz_opening: %f\n",theta_bottom,theta_top,camera_horizontal_opening_angle);
 }
 
 Pos px_to_pos(unsigned int px_x, unsigned int px_y, double z_plane)
 {
-    printf("px_x: %u, px_y: %u\n",px_x,px_y);
+    //printf("px_x: %u, px_y: %u\n",px_x,px_y);
     static bool is_init = false;
     if(!is_init)
     {
@@ -66,7 +65,7 @@ Pos px_to_pos(unsigned int px_x, unsigned int px_y, double z_plane)
     dir_y = dir_y / ddir;
     dir_z = dir_z / ddir;
 
-    printf("vert_angle: %f, horiz_angle: %f\n",vert_angle,horiz_angle);
+    //printf("vert_angle: %f, horiz_angle: %f\n",vert_angle,horiz_angle);
 
     double d = (CAM_HEIGHT - z_plane) / dir_z; 
 
@@ -77,7 +76,7 @@ Pos px_to_pos(unsigned int px_x, unsigned int px_y, double z_plane)
     result.x = CAM_X + x_res;
     result.y = y_res;
 
-    printf("retx: %f, rety: %f\n",x_res,y_res);
+    //printf("retx: %f, rety: %f\n",x_res,y_res);
     return result;
 }
 

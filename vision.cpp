@@ -127,11 +127,11 @@ vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
     lines.erase(lines.begin());
 
     while (!lines.empty()) {
-        cout << "- [" << lines[0][0] << "," << lines[0][1] << "]" << endl;
-        cout << lines_grouped.size() << endl;
+        //cout << "- [" << lines[0][0] << "," << lines[0][1] << "]" << endl;
+        //cout << lines_grouped.size() << endl;
         for (int j = 0; j < lines_grouped.size(); j++) {
-            cout << "-- [" << lines_grouped[j][0] << "," << lines_grouped[j][1]
-                << "]" << endl;
+            //cout << "-- [" << lines_grouped[j][0] << "," << lines_grouped[j][1]
+            //    << "]" << endl;
             if ((DIFFERENCE(lines[0][1], lines_grouped[j][1])) < THETA_THRESH &&
                 DIFFERENCE(lines[0][0], lines_grouped[j][0]) < RHO_THRESH) {
                 lines.erase(lines.begin());
@@ -151,9 +151,9 @@ vector<Vec2f> vision_lines_group(vector<Vec2f> lines)
 
 void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
     vector<Point2f> edges, vector<Triangle> triangles){
-    cout << "\nlines: " << lines.size() << endl;
+    //cout << "\nlines: " << lines.size() << endl;
     for (int i = 0; i < lines.size(); i++ ) {
-        cout << "  [" << lines[i][0] << "," << lines[i][1] << "]" << endl;
+        //cout << "  [" << lines[i][0] << "," << lines[i][1] << "]" << endl;
         float rho = lines[i][0], theta = lines[i][1];
         Point pt1, pt2;
         double a = cos(theta), b = sin(theta);
@@ -165,21 +165,21 @@ void vision_draw_line(Mat img, vector<Vec2f> lines, vector<Vec2f> lines_cart,
         line(img, pt1, pt2, Scalar(255, 0, i*90), 1, CV_AA);
     }
 
-    cout << "\nlines_cart: " << lines_cart.size() << endl;
+    //cout << "\nlines_cart: " << lines_cart.size() << endl;
 
-    cout << "\nedges: " << edges.size() << endl;
+    //cout << "\nedges: " << edges.size() << endl;
     for (int i = 0; i < edges.size(); i++) {
         circle(img, edges[i], 10, Scalar(255, 200, 0));
     }
 
-    cout << "\ntriangles: " << triangles.size() << endl;
+    //cout << "\ntriangles: " << triangles.size() << endl;
     Point2f pnt_tmp;
     for (int i = 0; i < triangles.size(); i++) {
         pnt_tmp.x = triangles[i].x;
         pnt_tmp.y = triangles[i].y;
         circle(img, pnt_tmp, 5, Scalar(255, 0, 0));
-        cout << "\ntriangles_centeroid: " << triangles[i].x << ", " << triangles[i].y << ", " <<
-            triangles[i].z << endl;
+        //cout << "\ntriangles_centeroid: " << triangles[i].x << ", " << triangles[i].y << ", " <<
+        //    triangles[i].z << endl;
     }
 }
 
@@ -206,7 +206,7 @@ void vision_write_picture()
 
 Mat vision_open_picture()
 {
-    Mat img = imread("../testimages/test_img/img08.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
+    Mat img = imread("./testimages/test_img/img08.jpg", CV_LOAD_IMAGE_COLOR);   // image as argument
     if (!img.data ) {
         cout <<  "Could not open or find the image." << endl ;
     }
@@ -269,7 +269,7 @@ vector<Triangle> vision_triangle_detect()
 
     vector<Vec2f> lines;
     HoughLines(img_edges, lines, 1, CV_PI/180, 50, 0, 0);
-    cout << "\ninitial lines.size(): " << lines.size() << endl << endl;
+    //cout << "\ninitial lines.size(): " << lines.size() << endl << endl;
 
     vector<Vec2f> lines_cart;
     vector<Point2f> edges;
